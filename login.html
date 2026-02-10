@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | HR Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <h2>ROOT_ACCESS</h2>
+        <p class="sub-text">กรุณายืนยันตัวตนเพื่อเข้าสู่ระบบประเมิน</p>
+
+        <form action="login_check.php" method="post">
+            
+            <div class="input-group">
+                <label for="username">$ username:</label>
+                <input type="text" id="username" name="username" placeholder="Enter your ID..." required autocomplete="off">
+            </div>
+
+            <div class="input-group">
+                <label for="password">$ password:</label>
+                <input type="password" id="password" name="password" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="margin-top: 20px;">
+                CONFIRM_ACCESS
+            </button>
+
+            <a href="index.html" class="btn btn-secondary" style="text-decoration: none; display:block; margin-top:10px;">
+                < cd .. (Back)
+            </a>
+        </form>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  # Load Balancer (ด่านหน้า)
+  nginx-lb:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - web-app
+
+  # Web Server (Backend) - จำลอง 3 เครื่องช่วยกันทำงาน
+  web-app:
+    image: php:8.0-apache
+    volumes:
+      - ./src:/var/www/html  # โฟลเดอร์เก็บโค้ด PHP ทั้งหมด
+    deploy:
+      replicas: 3 # รันพร้อมกัน 3 Container (Load Balancing)
+    environment:
+      - DB_HOST=db-server
+      - DB_USER=user
+      - DB_PASS=password
+      - DB_NAME=assessment_system
+
+  # Database Server
+  db-server:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: assessment_system
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
