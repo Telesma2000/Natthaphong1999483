@@ -135,7 +135,7 @@ input:focus {
     background-color: #79c0ff;
     transform: translateY(-2px);
 }
-
+    
 .btn-secondary {
     background-color: transparent;
     border: 1px solid var(--border);

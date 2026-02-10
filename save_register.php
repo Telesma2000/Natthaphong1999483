@@ -37,7 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if ($stmt->execute()) {
             // สมัครเสร็จแล้ว ให้เด้งไปหน้า register.html หรือหน้า login ก็ได้
-            alert("สมัครสมาชิกเรียบร้อยแล้ว!", "register.html"); 
+            alert("สมัครสมาชิกเรียบร้อยแล้ว!", "login.html"); 
         } else {
             alert("เกิดข้อผิดพลาด: " . $conn->error);
         }

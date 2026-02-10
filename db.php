@@ -1,8 +1,7 @@
 <?php
-// ไฟล์ src/db.php สำหรับ Docker
-$servername = "db-server";  // ต้องใช้ชื่อนี้เท่านั้น (ตาม service ใน docker-compose)
-$username = "root";         
-$password = "rootpassword"; // ต้องตรงกับ MYSQL_ROOT_PASSWORD ใน yml
+$servername = "localhost"; 
+$username = "root";
+$password = "12345678";
 $dbname = "my_website";
 
 $conn = new mysqli($servername, $username, $password, $dbname);

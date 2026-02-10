@@ -3,11 +3,11 @@ version: '3.8'
 services:
   # Web Server (Backend + Frontend)
   web-app:
-    build: .             # อ่านไฟล์ Dockerfile ที่เราเพิ่งสร้าง
+    build: .             # อ่านไฟล์ Dockerfile ที่วางอยู่ข้างๆ กัน
     ports:
       - "80:80"          # เข้าเว็บผ่าน http://localhost ได้เลย
     volumes:
-      - ./src:/var/www/html  # อย่าลืมเอาไฟล์ PHP ใส่โฟลเดอร์ src นะครับ
+      - .:/var/www/html  # <--- แก้ไขจุดนี้: ใช้ . (จุดเดียว) เพื่อบอกว่าให้เอาไฟล์ทั้งหมดในโฟลเดอร์นี้เข้าไปใน Server
     environment:
       - DB_HOST=db-server
       - DB_USER=root
@@ -21,7 +21,7 @@ services:
     image: mysql:5.7
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: my_website  # แก้ชื่อให้ตรงกับ SQL
+      MYSQL_DATABASE: my_website
     volumes:
       - db_data:/var/lib/mysql
 
