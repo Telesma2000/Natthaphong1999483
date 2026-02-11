@@ -13,12 +13,17 @@ require_once 'db.php';
 checkLogin();
 checkAdmin(); 
 
+// --- [จุดที่แก้ไข]: ดึง ID ของ Admin และปรับ SQL เพื่อไม่ให้รายชื่อเบิ้ล ---
+$admin_id = $_SESSION['user_id'];
+
 // อัปเดต SQL ให้ใช้คำว่า 'score' ให้ตรงกับตาราง evaluations ของคุณ
+// และเช็ค evaluator_id ให้ตรงกับ admin คนนี้ เพื่อป้องกันรายชื่อโชว์ซ้ำ
 $sql = "SELECT u.id, u.username, u.email, e.score 
         FROM users u 
-        LEFT JOIN evaluations e ON u.id = e.user_id 
+        LEFT JOIN evaluations e ON u.id = e.user_id AND e.evaluator_id = $admin_id
         WHERE u.role != 'admin'";
 $result = $conn->query($sql);
+// ------------------------------------------------------------------
 
 // เพิ่มตัวดักจับ Error: ถ้า SQL พัง จะได้รู้ทันทีว่าพังเพราะอะไร
 if (!$result) {

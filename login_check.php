@@ -28,12 +28,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['user_id'] = $row['id'];
             $_SESSION['role'] = $row['role']; // 'admin', 'user', 'evaluator'
 
-            // แยกทางตาม Role
+            // --- [จุดที่แก้ไข]: แยกทางตาม Role เพิ่มเงื่อนไขให้ evaluator ---
             if ($row['role'] == 'admin') {
                 header("Location: dashboard_admin.php");
+            } elseif ($row['role'] == 'evaluator') {
+                header("Location: dashboard_evaluator.php");
             } else {
                 header("Location: dashboard_user.php");
             }
+            // --------------------------------------------------------
             exit();
         } else {
             echo "<script>alert('รหัสผ่านไม่ถูกต้อง'); window.location='login.html';</script>";
@@ -49,4 +52,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     header("Location: login.html");
     exit();
 }
-?>  
+?>
