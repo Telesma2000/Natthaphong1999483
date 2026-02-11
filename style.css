@@ -1,15 +1,16 @@
-/* นำเข้าฟอนต์สาย Dev (JetBrains Mono) */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;500;700&family=Sarabun:wght@300;400;500&display=swap');
+/* นำเข้าฟอนต์สาย Modern (Inter) + Dev (JetBrains) + Thai (Sarabun) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Sarabun:wght@300;400;500&display=swap');
 
 :root {
-    --bg-color: #0d1117; /* สีดำแบบ GitHub Dark Mode */
-    --card-bg: #161b22;
-    --primary: #58a6ff;   /* สีฟ้า Code */
-    --accent: #238636;    /* สีเขียว Success */
-    --text-main: #c9d1d9;
-    --text-dim: #8b949e;
-    --border: #30363d;
-    --tester1: #970e0e;
+    --bg-color: #09090b; /* สีดำลึกแบบ Premium (Zinc 950) */
+    --card-bg: rgba(24, 24, 27, 0.6); /* สีเทาโปร่งแสง */
+    --primary: #8b5cf6;   /* สีม่วงพาสเทลสไตล์ Modern */
+    --primary-glow: rgba(139, 92, 246, 0.4); /* แสงสะท้อนสีม่วง */
+    --accent: #10b981;    /* สีเขียวมินิมอล (Emerald 500) */
+    --text-main: #f4f4f5; /* สีขาวอมเทา (ไม่สว่างแสบตา) */
+    --text-dim: #a1a1aa;
+    --border: rgba(255, 255, 255, 0.1); /* เส้นขอบกระจกบางเฉียบ */
+    --tester1: #ef4444;
 }
 
 body {
@@ -17,29 +18,44 @@ body {
     padding: 0;
     background-color: var(--bg-color);
     color: var(--text-main);
-    font-family: 'Sarabun', sans-serif; /* เนื้อหาทั่วไป */
+    font-family: 'Inter', 'Sarabun', sans-serif; /* เปลี่ยนฟอนต์หลักให้ดูแพงขึ้น */
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    overflow: hidden;
-    background-image: radial-gradient(#1f2428 1px, transparent 1px);
-    background-size: 20px 20px; /* สร้างลายจุดจางๆ พื้นหลัง */
+    min-height: 100vh;
+    /* สร้างลายจุด Grid จางๆ หรูหรา */
+    background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 30px 30px; 
+    overflow-x: hidden;
 }
 
-/* กล่องหลัก Glassmorphism + Tech Border */
+/* -------------------------------------------
+   [1] กล่องหลัก Glassmorphism แบบสมูท
+---------------------------------------------*/
 .container {
-    background: rgba(22, 27, 34, 0.95);
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     padding: 40px;
     width: 100%;
-    max-width: 400px;
+    max-width: 420px; /* ขยายขนาดกล่องนิดหน่อยให้ดูไม่อึดอัด */
     border: 1px solid var(--border);
-    border-radius: 6px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    border-radius: 24px; /* มุมโค้งมนแบบ Modern */
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7);
     position: relative;
+    z-index: 1; /* บังคับให้อยู่เหนือเส้น Background */
+    transform: translateY(0);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* แถบสีด้านบนเหมือนหน้าต่างโปรแกรม */
+/* เอฟเฟกต์เวลาเมาส์ชี้กล่องจะลอยขึ้นและเรืองแสง */
+.container:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 30px 60px -12px var(--primary-glow);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* แถบสีด้านบนไล่เฉดสี */
 .container::before {
     content: '';
     position: absolute;
@@ -47,25 +63,38 @@ body {
     left: 0;
     width: 100%;
     height: 4px;
-    background: linear-gradient(90deg, var(--primary), #bc8cff);
-    border-radius: 6px 6px 0 0;
+    background: linear-gradient(90deg, #3b82f6, var(--primary), #ec4899);
+    border-radius: 24px 24px 0 0;
 }
 
-h1, h2, .code-font {
-    font-family: 'JetBrains Mono', monospace;
+/* -------------------------------------------
+   [2] Typography ข้อความต่างๆ
+---------------------------------------------*/
+h1, h2 {
+    font-family: 'Inter', 'Sarabun', sans-serif;
     font-weight: 700;
-    color: #fff;
+    color: #ffffff;
     margin-bottom: 20px;
-    letter-spacing: -1px;
+    letter-spacing: -0.5px;
+}
+
+.code-font {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+    color: var(--primary);
+    font-size: 13px;
 }
 
 .sub-text {
     color: var(--text-dim);
     font-size: 14px;
     margin-bottom: 30px;
+    line-height: 1.6;
 }
 
-/* Input Fields สไตล์ Terminal */
+/* -------------------------------------------
+   [3] Input Fields สไตล์คลีน
+---------------------------------------------*/
 .input-group {
     margin-bottom: 20px;
     position: relative;
@@ -73,89 +102,169 @@ h1, h2, .code-font {
 
 .input-group label {
     display: block;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    color: var(--primary);
+    font-size: 13px;
+    color: var(--text-main);
     margin-bottom: 8px;
+    font-weight: 500;
 }
 
-/* --- แก้ไขจุดนี้: เพิ่ม email และ number เข้าไป --- */
 input[type="text"], 
 input[type="password"],
 input[type="email"], 
 input[type="number"] {
     width: 100%;
-    background: #0d1117;
+    background: rgba(0, 0, 0, 0.2); /* พื้นหลังช่องกรอกแบบจางๆ */
     border: 1px solid var(--border);
     color: #fff;
-    padding: 12px;
-    border-radius: 4px;
-    font-family: 'JetBrains Mono', monospace;
+    padding: 14px 16px;
+    border-radius: 12px; /* ช่องกรอกขอบมน */
+    font-family: 'Inter', 'Sarabun', sans-serif;
+    font-size: 14px;
     outline: none;
-    transition: 0.3s;
-    box-sizing: border-box; /* สำคัญ! ป้องกันกล่องเบี้ยว */
+    transition: all 0.3s ease;
+    box-sizing: border-box;
 }
 
-/* --- เพิ่มส่วนนี้: แก้ปัญหาจอขาวเวลา Browser จำรหัสผ่าน (Autofill) --- */
+/* แก้ปัญหาจอขาวเวลา Browser จำรหัสผ่าน (Autofill) */
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus, 
 input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 30px #0d1117 inset !important;
+    -webkit-box-shadow: 0 0 0 30px #18181b inset !important;
     -webkit-text-fill-color: white !important;
+    border-radius: 12px;
     transition: background-color 5000s ease-in-out 0s;
 }
 
+/* เอฟเฟกต์ตอนกดคลิกที่ช่องกรอกข้อมูล */
 input:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
+    box-shadow: 0 0 0 4px var(--primary-glow);
+    background: rgba(0, 0, 0, 0.4);
 }
 
-/* ปุ่มกดสไตล์ Dev */
+/* -------------------------------------------
+   [4] ปุ่มกดแบบมีมิติ (Modern Buttons)
+---------------------------------------------*/
 .btn {
     display: block;
     width: 100%;
-    padding: 12px;
+    padding: 14px;
     text-align: center;
     text-decoration: none;
-    border-radius: 4px;
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: bold;
-    font-size: 14px;
-    transition: all 0.2s;
+    border-radius: 12px; /* ปุ่มขอบมน */
+    font-weight: 600;
+    font-size: 15px;
+    transition: all 0.3s ease;
     cursor: pointer;
     border: none;
     box-sizing: border-box;
 }
 
 .btn-primary {
-    background-color: var(--primary);
-    color: #0d1117;
+    background: linear-gradient(135deg, var(--primary), #6d28d9);
+    color: #ffffff;
+    box-shadow: 0 4px 14px var(--primary-glow);
 }
 .btn-primary:hover {
-    background-color: #79c0ff;
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+    filter: brightness(1.1);
 }
     
 .btn-secondary {
-    background-color: transparent;
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border);
     color: var(--text-main);
-    margin-top: 10px;
+    margin-top: 12px;
 }
 .btn-secondary:hover {
-    border-color: var(--text-main);
-    background-color: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    transform: translateY(-2px);
 }
 
 /* Animation ตัวหนังสือพิมพ์เอง */
 .typing-effect {
     overflow: hidden;
     white-space: nowrap;
-    border-right: 3px solid var(--primary);
+    border-right: 2px solid var(--primary);
     animation: typing 3s steps(30, end), blink-caret .75s step-end infinite;
     display: inline-block;
 }
 
 @keyframes typing { from { width: 0 } to { width: 100% } }
 @keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: var(--primary) } }
+
+
+/* -------------------------------------------
+   [5] CSS สำหรับมังกร Cyberpunk (เก็บของเดิมไว้)
+---------------------------------------------*/
+.dragon-container {
+    width: 180px;
+    height: 180px;
+    margin: 0 auto 20px auto;
+    animation: dragonHover 4s ease-in-out infinite;
+}
+
+.cyber-dragon path,
+.cyber-dragon line,
+.cyber-dragon polygon,
+.cyber-dragon circle {
+    fill: none;
+    stroke: var(--primary);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 0 2px var(--primary)) 
+            drop-shadow(0 0 8px var(--primary-glow));
+    vector-effect: non-scaling-stroke;
+}
+
+.cyber-dragon .joint {
+    fill: var(--primary);
+    stroke: none;
+    filter: drop-shadow(0 0 5px var(--primary));
+}
+
+.cyber-dragon .eye {
+    fill: var(--accent); /* ตาสีเขียวเรืองแสง */
+    stroke: none;
+    filter: drop-shadow(0 0 5px var(--accent)) drop-shadow(0 0 10px var(--accent));
+}
+
+.wing-left {
+    transform-origin: 95px 85px; 
+    animation: wingFlapLeft 3s ease-in-out infinite;
+}
+
+.wing-right {
+    transform-origin: 105px 85px; 
+    animation: wingFlapRight 3s ease-in-out infinite;
+}
+
+@keyframes dragonHover {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-15px); }
+}
+
+@keyframes wingFlapLeft {
+    0%, 100% { transform: rotate(0deg) scaleY(1); }
+    50% { transform: rotate(-20deg) scaleY(0.8); }
+}
+
+@keyframes wingFlapRight {
+    0%, 100% { transform: rotate(0deg) scaleY(1); }
+    50% { transform: rotate(20deg) scaleY(0.8); }
+}
+
+.body-pulse {
+    stroke-dasharray: 100;
+    animation: dashMove 5s linear infinite;
+    opacity: 0.7;
+}
+
+@keyframes dashMove {
+    to { stroke-dashoffset: -200; }
+}
