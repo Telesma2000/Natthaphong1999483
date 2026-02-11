@@ -1,5 +1,4 @@
 <?php
-// --- เพิ่มโค้ดส่วนนี้เพื่อจัดการการออกจากระบบ (Logout) และเด้งไปหน้า index.html ---
 if (isset($_GET['action']) && $_GET['action'] == 'logout') {
     session_start();
     session_unset();
@@ -7,7 +6,6 @@ if (isset($_GET['action']) && $_GET['action'] == 'logout') {
     header("Location: index.html");
     exit();
 }
-// ------------------------------------------------------------------------
 
 require_once 'auth.php';
 require_once 'db.php';
@@ -15,11 +13,17 @@ checkLogin();
 
 $user_id = $_SESSION['user_id'];
 
-// ดึงไฟล์ที่เคยอัปโหลด
-$file_sql = "SELECT * FROM evidence WHERE user_id = $user_id ORDER BY uploaded_at DESC";
-$files = $conn->query($file_sql);
+// --- [จุดแก้ไข]: ดึงข้อมูลโดยแยกตามชื่อ Path ในฐานข้อมูลของคุณ ---
+// 1. ไฟล์ที่ User อัปโหลดเอง (ชื่อ Path จะไม่มีคำว่า ADMIN_EVID)
+$user_files_sql = "SELECT * FROM evidence WHERE user_id = $user_id AND file_path NOT LIKE '%ADMIN_EVID_%' ORDER BY uploaded_at DESC";
+$user_files = $conn->query($user_files_sql);
 
-// --- [จุดที่แก้ไขที่ 1]: ดึงคะแนนแยกระหว่าง Admin และ Evaluator ---
+// 2. ไฟล์ที่ Admin/Evaluator แนบมา (ชื่อ Path จะมีคำว่า ADMIN_EVID)
+$admin_files_sql = "SELECT * FROM evidence WHERE user_id = $user_id AND file_path LIKE '%ADMIN_EVID_%' ORDER BY uploaded_at DESC";
+$admin_files = $conn->query($admin_files_sql);
+// -----------------------------------------------------------
+
+// ดึงคะแนนแยกระหว่าง Admin และ Evaluator
 $score_sql = "SELECT e.score, e.comments, u.role as evaluator_role 
               FROM evaluations e 
               JOIN users u ON e.evaluator_id = u.id 
@@ -36,14 +40,34 @@ while($row = $score_result->fetch_assoc()) {
         $evaluator_score = $row;
     }
 }
-// --------------------------------------------------------------
 ?>
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>User Portal</title>
+    <title>User Portal | HR System</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .file-list-container {
+            background: #0d1117; 
+            border: 1px solid var(--border); 
+            border-radius: 4px; 
+            padding: 10px;
+            margin-top: 10px;
+        }
+        .file-item {
+            border-bottom: 1px solid var(--border); 
+            padding: 10px 0; 
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .file-item:last-child { border-bottom: none; }
+        .file-link { color: var(--primary); text-decoration: none; font-weight: bold; }
+        .file-link:hover { text-decoration: underline; }
+        .file-date { color: var(--text-dim); font-size: 12px; font-family: 'JetBrains Mono', monospace; }
+    </style>
 </head>
 <body>
     <div class="container" style="max-width: 650px;">
@@ -55,9 +79,9 @@ while($row = $score_result->fetch_assoc()) {
                 <label class="code-font" style="color: var(--primary); font-size: 13px;">> ADMIN_SCORE</label>
                 <?php if ($admin_score): ?>
                     <h1 style="font-size: 36px; margin: 10px 0; color: #fff;"><?php echo $admin_score['score']; ?>/100</h1>
-                    <p class="sub-text" style="font-size: 14px;">"<?php echo htmlspecialchars($admin_score['comments']); ?>"</p>
+                    <p class="sub-text" style="font-size: 14px; margin-bottom: 0;">"<?php echo htmlspecialchars($admin_score['comments']); ?>"</p>
                 <?php else: ?>
-                    <p style="color: var(--text-dim); margin-top: 10px; font-size: 14px;">กำลังรอผลการประเมิน...</p>
+                    <p style="color: var(--text-dim); margin-top: 10px; font-size: 14px; margin-bottom: 0;">กำลังรอผลการประเมิน...</p>
                 <?php endif; ?>
             </div>
 
@@ -65,37 +89,59 @@ while($row = $score_result->fetch_assoc()) {
                 <label class="code-font" style="color: #bc8cff; font-size: 13px;">> EVALUATOR_SCORE</label>
                 <?php if ($evaluator_score): ?>
                     <h1 style="font-size: 36px; margin: 10px 0; color: #fff;"><?php echo $evaluator_score['score']; ?>/100</h1>
-                    <p class="sub-text" style="font-size: 14px;">"<?php echo htmlspecialchars($evaluator_score['comments']); ?>"</p>
+                    <p class="sub-text" style="font-size: 14px; margin-bottom: 0;">"<?php echo htmlspecialchars($evaluator_score['comments']); ?>"</p>
                 <?php else: ?>
-                    <p style="color: var(--text-dim); margin-top: 10px; font-size: 14px;">กำลังรอผลการประเมิน...</p>
+                    <p style="color: var(--text-dim); margin-top: 10px; font-size: 14px; margin-bottom: 0;">กำลังรอผลการประเมิน...</p>
                 <?php endif; ?>
             </div>
         </div>
+
         <form action="save_upload.php" method="post" enctype="multipart/form-data">
             <div class="input-group">
-                <label for="file">อัปโหลดไฟล์ (PDF/IMG):</label>
-                <input type="file" name="file_upload" id="file" required style="color: white;">
+                <label for="file">แนบไฟล์หลักฐาน (PDF/IMG/DOCX/XLSX):</label>
+                <input type="file" name="file_upload" id="file" required style="color: white; background: #0d1117; padding: 10px; border: 1px dashed var(--border); border-radius: 4px; width: 100%; box-sizing: border-box;">
             </div>
-            <button type="submit" class="btn btn-primary">
-                อัปโหลด
+            <button type="submit" class="btn btn-primary" style="margin-top: 10px;">
+                อัปโหลดเอกสาร
             </button>
         </form>
 
-        <?php if ($files->num_rows > 0): ?>
-            <div style="margin-top: 30px;">
-                <label class="code-font" style="color: var(--primary);">UPLOADED_FILES:</label>
-                <ul style="list-style: none; padding: 0; margin-top: 10px;">
-                    <?php while($f = $files->fetch_assoc()): ?>
-                        <li style="border-bottom: 1px solid var(--border); padding: 8px 0; color: var(--text-dim); font-size: 14px;">
-                            📄 <?php echo $f['file_name']; ?> 
-                            <span style="float: right;"><?php echo date('d/m/Y', strtotime($f['uploaded_at'])); ?></span>
-                        </li>
+        <hr style="border: 0; height: 1px; background: var(--border); margin: 30px 0;">
+
+        <?php if ($admin_files->num_rows > 0): ?>
+            <div style="margin-bottom: 25px;">
+                <label class="code-font" style="color: var(--accent);">📥 FEEDBACK_DOCUMENTS (เอกสารตอบกลับจากกรรมการ):</label>
+                <div class="file-list-container">
+                    <?php while($f = $admin_files->fetch_assoc()): ?>
+                        <div class="file-item">
+                            <a href="<?php echo $f['file_path']; ?>" target="_blank" class="file-link" style="color: var(--accent);">
+                                📎 <?php echo $f['file_name']; ?> 
+                            </a>
+                            <span class="file-date"><?php echo date('d/m/Y H:i', strtotime($f['uploaded_at'])); ?></span>
+                        </div>
                     <?php endwhile; ?>
-                </ul>
+                </div>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($user_files->num_rows > 0): ?>
+            <div>
+                <label class="code-font" style="color: var(--primary);">📤 MY_UPLOADED_FILES (เอกสารที่คุณส่ง):</label>
+                <div class="file-list-container">
+                    <?php while($f = $user_files->fetch_assoc()): ?>
+                        <div class="file-item">
+                            <a href="<?php echo $f['file_path']; ?>" target="_blank" class="file-link">
+                                📄 <?php echo $f['file_name']; ?> 
+                            </a>
+                            <span class="file-date"><?php echo date('d/m/Y H:i', strtotime($f['uploaded_at'])); ?></span>
+                        </div>
+                    <?php endwhile; ?>
+                </div>
             </div>
         <?php endif; ?>
         
-        <a href="?action=logout" class="btn btn-secondary" style="margin-top: 20px;">ออกจากระบบ</a>
+        <a href="?action=logout" class="btn btn-secondary" style="margin-top: 30px;">ออกจากระบบ</a>
     </div>
+    <script src="background.js"></script>
 </body>
 </html>

@@ -9,7 +9,26 @@
 <body>
 
     <div class="container" style="text-align: center;">
-        <div style="font-size: 40px; margin-bottom: 20px;">🛡️</div>
+        
+        <div style="margin-bottom: 25px; display: flex; justify-content: center;">
+            <svg width="90" height="90" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 12px rgba(88, 166, 255, 0.5));">
+                <circle cx="50" cy="50" r="45" fill="none" stroke="var(--border)" stroke-width="2" stroke-dasharray="4 6" opacity="0.6"/>
+                <circle cx="50" cy="50" r="35" fill="none" stroke="var(--primary)" stroke-width="1" opacity="0.2"/>
+                
+                <path d="M 10 40 L 30 35 L 40 20 L 60 20 L 75 15 L 65 35 L 85 45 L 65 55 L 65 85 L 45 85 L 35 65 L 15 70 L 25 55 Z" 
+                      fill="rgba(88, 166, 255, 0.1)" 
+                      stroke="var(--primary)" 
+                      stroke-width="2" 
+                      stroke-linejoin="round"/>
+                
+                <path d="M 40 20 L 65 35 M 30 35 L 35 65 M 25 55 L 35 65 M 65 55 L 45 85" 
+                      stroke="var(--primary)" 
+                      stroke-width="1" 
+                      opacity="0.5"/>
+                      
+                <polygon points="32,38 39,37 37,42 30,41" fill="var(--accent)" style="filter: drop-shadow(0 0 5px var(--accent));" />
+            </svg>
+        </div>
 
         <div class="code-font" style="color: var(--primary);">
             <span class="typing-effect">ยินดีต้อนรับ...</span>
@@ -33,6 +52,8 @@
             SERVER_STATUS: <span style="color: var(--accent)">ONLINE</span>
         </div>
     </div>
+    
+    <script src="background.js"></script>
 
 </body>
 </html>

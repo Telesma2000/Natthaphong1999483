@@ -162,5 +162,6 @@ if (!$result) {
             < ออกจากระบบ
         </a>
     </div>
+    <script src="background.js"></script>
 </body>
 </html>

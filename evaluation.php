@@ -259,5 +259,6 @@ $evidence = $conn->query($evidence_sql);
             document.getElementById('hidden_total_score').value = total;
         }
     </script>
+    <script src="background.js"></script>
 </body>
 </html>
