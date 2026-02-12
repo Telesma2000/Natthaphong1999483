@@ -17,9 +17,10 @@ $target_id = $_GET['user_id'];
 $user_sql = "SELECT username FROM users WHERE id = $target_id";
 $target_user = $conn->query($user_sql)->fetch_assoc();
 
-// ดึงไฟล์หลักฐานของ User คนนั้นมาดูประกอบ
-$evidence_sql = "SELECT * FROM evidence WHERE user_id = $target_id";
+// --- [จุดที่แก้ไข 2]: ปรับ SQL ให้กรองไฟล์ของ Admin และ Evaluator ออก (โชว์เฉพาะของ User) ---
+$evidence_sql = "SELECT * FROM evidence WHERE user_id = $target_id AND file_path NOT LIKE '%/ADMIN_EVID_%' AND file_path NOT LIKE '%/EVAL_EVID_%' ORDER BY uploaded_at DESC";
 $evidence = $conn->query($evidence_sql);
+// ---------------------------------------------------------------------------------------
 ?>
 <!DOCTYPE html>
 <html lang="th">
@@ -130,17 +131,16 @@ $evidence = $conn->query($evidence_sql);
         .score-input::-webkit-outer-spin-button,
         .score-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         
-        /* ไม่จำเป็นต้องใช้ .file-upload-input เดิมแล้ว เพราะเรามี class ใหม่ใน style.css */
     </style>
 </head>
 <body>
     <div class="container-wide">
         <h2>EVALUATE_MODE</h2>
-        <p class="sub-text">Target: <span style="color: var(--primary);"><?php echo $target_user['username']; ?></span></p>
+        <p class="sub-text">ผู้รับการประเมิน: <span style="color: var(--primary);"><?php echo $target_user['username']; ?></span></p>
 
         <div style="margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 4px; border: 1px dashed var(--border);">
-            <label class="code-font" style="color: var(--accent);">USER_EVIDENCE:</label>
-            <?php if ($evidence->num_rows == 0) echo "<p class='sub-text' style='margin-top:10px;'>No evidence uploaded.</p>"; ?>
+            <label class="code-font" style="color: var(--accent);">USER_EVIDENCE (ไฟล์งานของผู้ใช้):</label>
+            <?php if ($evidence->num_rows == 0) echo "<p class='sub-text' style='margin-top:10px;'>- User ยังไม่ได้อัปโหลดไฟล์งาน -</p>"; ?>
             <?php while($file = $evidence->fetch_assoc()): ?>
                 <div style="margin-top: 10px;">
                     <a href="<?php echo $file['file_path']; ?>" target="_blank" style="color: var(--primary); text-decoration: none;">
@@ -166,7 +166,6 @@ $evidence = $conn->query($evidence_sql);
                     </thead>
                     <tbody>
                         <?php 
-                        // --- [จุดแก้ไข]: เปลี่ยนข้อความให้เป็นภาษาที่เข้าใจง่าย ---
                         $test_cases = [
                             ["Functional", "ระบบสมาชิก", "ทดสอบสมัครสมาชิกและ Login", "เข้าสู่ระบบสำเร็จ / ข้อมูลถูกต้อง", "badge-functional"],
                             ["Functional", "การแสดงผลหน้าแรก", "เข้าหน้าแรกด้วยสิทธิ์ Admin/Evaluator/User", "เห็นเมนูถูกต้องตามสิทธิ์ตัวเอง", "badge-functional"],
@@ -179,7 +178,6 @@ $evidence = $conn->query($evidence_sql);
                             ["Functional", "ดาวน์โหลดรายงาน", "ทดลองกดปุ่มดาวน์โหลด/เปิดไฟล์", "ไฟล์เปิดได้ถูกต้อง ไม่เสียหาย", "badge-functional"],
                             ["Security", "ความปลอดภัย Login", "ลองใส่รหัสแปลกๆ (' OR 1=1) หน้า Login", "เข้าสู่ระบบไม่ได้ / ระบบปลอดภัย", "badge-security"]
                         ];
-                        // --------------------------------------------------------
                         
                         foreach ($test_cases as $index => $tc) {
                             echo "<tr>";
@@ -188,7 +186,6 @@ $evidence = $conn->query($evidence_sql);
                             echo "<td>{$tc[2]}</td>";
                             echo "<td>{$tc[3]}</td>";
                             echo "<td style='text-align: center;'>";
-                            // Input สำหรับกรอกคะแนน สั่งให้เรียกฟังก์ชันคำนวณทุกครั้งที่พิมพ์
                             echo "<input type='number' name='item_scores[]' class='score-input' min='0' max='10' value='0' oninput='calculateTotal()' required>";
                             echo "</td>";
                             echo "</tr>";
@@ -217,7 +214,7 @@ $evidence = $conn->query($evidence_sql);
                     <input type="file" name="admin_evidence_file" id="admin_file" accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx" onchange="showFileName(this, 'admin-file-name')">
                     
                     <span id="admin-file-name" class="file-name-display">...</span>
-                    </div>
+                </div>
 
                 <div class="input-group">
                     <label>COMMENT / FEEDBACK:</label>
@@ -243,19 +240,15 @@ $evidence = $conn->query($evidence_sql);
             
             inputs.forEach(input => {
                 let val = parseInt(input.value) || 0;
-                // ดักจับไม่ให้พิมพ์เกิน 10 หรือติดลบ
                 if (val > 10) { val = 10; input.value = 10; }
                 if (val < 0) { val = 0; input.value = 0; }
                 total += val;
             });
             
-            // อัปเดตตัวเลขบนหน้าจอ
             document.getElementById('total-display').innerText = total + " / 100";
-            // อัปเดตตัวแปร hidden เพื่อส่งไปให้ backend (save_evaluation.php)
             document.getElementById('hidden_total_score').value = total;
         }
 
-        // --- [จุดที่แก้ไข]: Script สำหรับโชว์ชื่อไฟล์ ---
         function showFileName(input, displayId) {
             const display = document.getElementById(displayId);
             if (input.files && input.files.length > 0) {
@@ -266,7 +259,6 @@ $evidence = $conn->query($evidence_sql);
                 display.classList.remove('active');
             }
         }
-        // ---------------------------------------------
     </script>
     <script src="background.js"></script>
 </body>

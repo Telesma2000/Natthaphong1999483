@@ -15,17 +15,19 @@ checkLogin();
 
 $user_id = $_SESSION['user_id'];
 
-// 1. ดึงไฟล์ของ Admin (หาคำว่า ADMIN_EVID)
-$admin_files_sql = "SELECT * FROM evidence WHERE user_id = $user_id AND file_path LIKE '%ADMIN_EVID_%' ORDER BY uploaded_at DESC";
+// --- [จุดแก้ไข]: เพิ่ม / เพื่อระบุว่าหาชื่อไฟล์ ไม่ใช่ชื่อโฟลเดอร์ ---
+// 1. ดึงไฟล์ของ Admin
+$admin_files_sql = "SELECT * FROM evidence WHERE user_id = $user_id AND file_path LIKE '%/ADMIN_EVID_%' ORDER BY uploaded_at DESC";
 $admin_files = $conn->query($admin_files_sql);
 
-// 2. ดึงไฟล์ของ Evaluator (หาคำว่า EVAL_EVID)
-$eval_files_sql = "SELECT * FROM evidence WHERE user_id = $user_id AND file_path LIKE '%EVAL_EVID_%' ORDER BY uploaded_at DESC";
+// 2. ดึงไฟล์ของ Evaluator
+$eval_files_sql = "SELECT * FROM evidence WHERE user_id = $user_id AND file_path LIKE '%/EVAL_EVID_%' ORDER BY uploaded_at DESC";
 $eval_files = $conn->query($eval_files_sql);
 
-// 3. ดึงไฟล์ที่ User อัปโหลดเอง (ไม่เอาทั้ง ADMIN และ EVAL)
-$user_files_sql = "SELECT * FROM evidence WHERE user_id = $user_id AND file_path NOT LIKE '%ADMIN_EVID_%' AND file_path NOT LIKE '%EVAL_EVID_%' ORDER BY uploaded_at DESC";
+// 3. ดึงไฟล์ที่ User อัปโหลดเอง
+$user_files_sql = "SELECT * FROM evidence WHERE user_id = $user_id AND file_path NOT LIKE '%/ADMIN_EVID_%' AND file_path NOT LIKE '%/EVAL_EVID_%' ORDER BY uploaded_at DESC";
 $user_files = $conn->query($user_files_sql);
+// ----------------------------------------------------------------
 
 // ดึงคะแนน
 $score_sql = "SELECT e.score, e.comments, u.role as evaluator_role 
@@ -52,7 +54,6 @@ while($row = $score_result->fetch_assoc()) {
     <title>User Portal | HR System</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Grid แบ่งซ้ายขวา */
         .evidence-grid {
             display: flex;
             gap: 20px;
@@ -135,13 +136,10 @@ while($row = $score_result->fetch_assoc()) {
         <form action="save_upload.php" method="post" enctype="multipart/form-data">
             <div class="input-group">
                 <label>ส่งงาน (PDF, JPG, PNG | Max 10MB):</label>
-                
                 <label for="user_file" class="custom-file-upload">
                     <span class="upload-icon">📂</span> คลิกเพื่อเลือกไฟล์ (Browse File)
                 </label>
-                
                 <input type="file" name="file_upload" id="user_file" accept=".pdf, .jpg, .jpeg, .png" required onchange="showFileName(this, 'user-file-name')">
-                
                 <span id="user-file-name" class="file-name-display">...</span>
             </div>
             
@@ -229,7 +227,7 @@ while($row = $score_result->fetch_assoc()) {
             const display = document.getElementById(displayId);
             if (input.files && input.files.length > 0) {
                 display.innerText = "Selected: " + input.files[0].name;
-                display.classList.add('active');
+                display.classList.add('active');    
             } else {
                 display.innerText = "";
                 display.classList.remove('active');
