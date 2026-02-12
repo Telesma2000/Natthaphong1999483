@@ -268,3 +268,57 @@ input:focus {
 @keyframes dashMove {
     to { stroke-dashoffset: -200; }
 }
+
+/* -------------------------------------------
+   [6] ส่วนแก้ไขปุ่มอัปโหลดไฟล์ (NEW)
+---------------------------------------------*/
+input[type="file"] {
+    display: none; /* ซ่อนปุ่มเดิม */
+}
+
+.custom-file-upload {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px dashed var(--border);
+    border-radius: 12px; /* โค้งมนเข้ากับธีม */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--text-dim);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    box-sizing: border-box;
+}
+
+.custom-file-upload:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--primary);
+    color: #fff;
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+}
+
+.upload-icon {
+    margin-right: 10px;
+    font-size: 18px;
+    color: var(--primary);
+}
+
+/* แสดงชื่อไฟล์ */
+.file-name-display {
+    display: block;
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.file-name-display.active {
+    opacity: 1;
+}

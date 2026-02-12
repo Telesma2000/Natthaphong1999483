@@ -130,18 +130,7 @@ $evidence = $conn->query($evidence_sql);
         .score-input::-webkit-outer-spin-button,
         .score-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         
-        /* ตกแต่งช่องอัปโหลดไฟล์ */
-        .file-upload-input {
-            width: 100%;
-            background: #0d1117;
-            color: #fff;
-            padding: 10px;
-            border: 1px dashed var(--border);
-            border-radius: 4px;
-            font-family: 'JetBrains Mono', monospace;
-            cursor: pointer;
-        }
-        .file-upload-input:hover { border-color: var(--primary); }
+        /* ไม่จำเป็นต้องใช้ .file-upload-input เดิมแล้ว เพราะเรามี class ใหม่ใน style.css */
     </style>
 </head>
 <body>
@@ -165,32 +154,32 @@ $evidence = $conn->query($evidence_sql);
             <input type="hidden" name="user_id" value="<?php echo $target_id; ?>">
             <input type="hidden" name="score" id="hidden_total_score" value="0">
 
-            <h3 class="code-font" style="color: #fff; margin-top: 40px;">> SYSTEM_TEST_CASES.log (เกณฑ์การให้คะแนน)</h3>
+            <h3 class="code-font" style="color: #fff; margin-top: 40px;">> EVALUATION_CRITERIA (เกณฑ์การให้คะแนน)</h3>
             <div class="table-wrapper">
                 <table class="dev-table">
                     <thead>
                         <tr>
                             <th>หมวด</th>
-                            <th>Test Case (TC)</th>
-                            <th>Input/Step (ขั้นตอนการทดสอบ)</th>
-                            <th>Expected (ผลลัพธ์ที่คาดหวัง)</th>
-                            <th style="text-align: center;">คะแนน (เต็ม 10)</th>
+                            <th>หัวข้อ (Topic)</th>
+                            <th>สิ่งที่ต้องทำ (Action)</th> <th>ผลลัพธ์ที่ควรได้ (Result)</th> <th style="text-align: center;">คะแนน (เต็ม 10)</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php 
+                        // --- [จุดแก้ไข]: เปลี่ยนข้อความให้เป็นภาษาที่เข้าใจง่าย ---
                         $test_cases = [
-                            ["Functional", "สมัคร/ล็อกอิน (ถ้ามี)", "1) POST /auth/register (optional)<br>2) POST /auth/login<br>บันทึก token เป็น {{jwtToken}}", "Register: 201/200<br>Login: 200 + JSON มี token", "badge-functional"],
-                            ["Functional", "Home ถูกบทบาท", "เปิด /home (หรือหน้า mock) หลัง login ด้วยบทบาทต่างๆ", "Admin: การ์ดสรุป...<br>Evaluator: My Assignments", "badge-functional"],
-                            ["Functional", "ดูผลของตนเอง", "GET /task1/evaluation-results?user_id=3&assignment_id=10", "200 + rows เฉพาะ assignment 10", "badge-functional"],
-                            ["Functional", "มอบหมายซ้ำ", "POST /task4/assignments (แทรกรายการที่มีอยู่แล้ว)", "<span style='color:#f85149;'>409 DUPLICATE_ASSIGNMENT</span>", "badge-functional"],
-                            ["Security", "IDOR", "GET /task1/evaluation-results?... (ไม่ใช่เจ้าของ)", "<span style='color:#f85149;'>403 forbidden</span>", "badge-security"],
-                            ["Security", "Evidence Rule", "ลบ attachments ของ result_id=101 &rarr; PATCH /task2/...", "<span style='color:#f85149;'>400 EVIDENCE_REQUIRED</span>", "badge-security"],
-                            ["Non-functional", "อัปโหลดไฟล์ >10MB", "POST /me/evidence (แบบไฟล์ใหญ่กว่า 10MB)", "<span style='color:#f85149;'>413 Payload Too Large</span>", "badge-nonfunc"],
-                            ["Non-functional", "ชนิดไฟล์ต้องห้าม", "POST /me/evidence แบบ .exe", "<span style='color:#f85149;'>415 Unsupported Media Type</span>", "badge-nonfunc"],
-                            ["Functional", "Export รายงาน", "GET /reports/export?format=pdf", "200 + ดาวน์โหลดไฟล์ PDF/Excel ได้สำเร็จ", "badge-functional"],
-                            ["Security", "SQL Injection Prevention", "POST /auth/login ด้วย Payload: ' OR '1'='1", "<span style='color:#f85149;'>401 Unauthorized</span>", "badge-security"]
+                            ["Functional", "ระบบสมาชิก", "ทดสอบสมัครสมาชิกและ Login", "เข้าสู่ระบบสำเร็จ / ข้อมูลถูกต้อง", "badge-functional"],
+                            ["Functional", "การแสดงผลหน้าแรก", "เข้าหน้าแรกด้วยสิทธิ์ Admin/Evaluator/User", "เห็นเมนูถูกต้องตามสิทธิ์ตัวเอง", "badge-functional"],
+                            ["Functional", "ดูคะแนนตัวเอง", "User เข้าไปดูผลคะแนน", "เห็นเฉพาะคะแนนของตัวเองเท่านั้น", "badge-functional"],
+                            ["Functional", "การบันทึกข้อมูล", "ลองกรอกข้อมูลหรือกดบันทึกซ้ำๆ", "ระบบป้องกันการบันทึกซ้ำ", "badge-functional"],
+                            ["Security", "แอบดูข้อมูลคนอื่น", "ลองเปลี่ยน ID ใน URL เพื่อดูข้อมูลคนอื่น", "ระบบบล็อค (Access Denied)", "badge-security"],
+                            ["Security", "การจัดการไฟล์", "ลองลบไฟล์สำคัญออกจากระบบ", "ลบไม่ได้ / ระบบแจ้งเตือน", "badge-security"],
+                            ["Non-functional", "ขนาดไฟล์", "อัปโหลดไฟล์ขนาดใหญ่เกิน 10MB", "แจ้งเตือน 'ไฟล์ใหญ่เกินไป'", "badge-nonfunc"],
+                            ["Non-functional", "ประเภทไฟล์", "อัปโหลดไฟล์แปลกๆ เช่น .exe", "แจ้งเตือน 'นามสกุลไฟล์ไม่ถูกต้อง'", "badge-nonfunc"],
+                            ["Functional", "ดาวน์โหลดรายงาน", "ทดลองกดปุ่มดาวน์โหลด/เปิดไฟล์", "ไฟล์เปิดได้ถูกต้อง ไม่เสียหาย", "badge-functional"],
+                            ["Security", "ความปลอดภัย Login", "ลองใส่รหัสแปลกๆ (' OR 1=1) หน้า Login", "เข้าสู่ระบบไม่ได้ / ระบบปลอดภัย", "badge-security"]
                         ];
+                        // --------------------------------------------------------
                         
                         foreach ($test_cases as $index => $tc) {
                             echo "<tr>";
@@ -220,8 +209,15 @@ $evidence = $conn->query($evidence_sql);
                 
                 <div class="input-group">
                     <label>EVIDENCE (แนบไฟล์เอกสารการประเมินกลับให้ User):</label>
-                    <input type="file" name="admin_evidence_file" class="file-upload-input" accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx">
-                </div>
+                    
+                    <label for="admin_file" class="custom-file-upload">
+                        <span class="upload-icon">📎</span> แนบไฟล์ผลการประเมิน (Attach File)
+                    </label>
+                    
+                    <input type="file" name="admin_evidence_file" id="admin_file" accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx" onchange="showFileName(this, 'admin-file-name')">
+                    
+                    <span id="admin-file-name" class="file-name-display">...</span>
+                    </div>
 
                 <div class="input-group">
                     <label>COMMENT / FEEDBACK:</label>
@@ -258,6 +254,19 @@ $evidence = $conn->query($evidence_sql);
             // อัปเดตตัวแปร hidden เพื่อส่งไปให้ backend (save_evaluation.php)
             document.getElementById('hidden_total_score').value = total;
         }
+
+        // --- [จุดที่แก้ไข]: Script สำหรับโชว์ชื่อไฟล์ ---
+        function showFileName(input, displayId) {
+            const display = document.getElementById(displayId);
+            if (input.files && input.files.length > 0) {
+                display.innerText = "Selected: " + input.files[0].name;
+                display.classList.add('active');
+            } else {
+                display.innerText = "";
+                display.classList.remove('active');
+            }
+        }
+        // ---------------------------------------------
     </script>
     <script src="background.js"></script>
 </body>

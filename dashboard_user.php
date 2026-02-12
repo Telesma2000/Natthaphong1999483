@@ -134,14 +134,21 @@ while($row = $score_result->fetch_assoc()) {
 
         <form action="save_upload.php" method="post" enctype="multipart/form-data">
             <div class="input-group">
-                <label for="file">ส่งงาน (PDF, JPG, PNG | Max 10MB):</label>
-                <input type="file" name="file_upload" id="file" accept=".pdf, .jpg, .jpeg, .png" required style="color: white; background: #0d1117; padding: 10px; border: 1px dashed var(--border); border-radius: 4px; width: 100%; box-sizing: border-box;">
+                <label>ส่งงาน (PDF, JPG, PNG | Max 10MB):</label>
+                
+                <label for="user_file" class="custom-file-upload">
+                    <span class="upload-icon">📂</span> คลิกเพื่อเลือกไฟล์ (Browse File)
+                </label>
+                
+                <input type="file" name="file_upload" id="user_file" accept=".pdf, .jpg, .jpeg, .png" required onchange="showFileName(this, 'user-file-name')">
+                
+                <span id="user-file-name" class="file-name-display">...</span>
             </div>
-            <button type="submit" class="btn btn-primary" style="margin-top: 10px;">
+            
+            <button type="submit" class="btn btn-primary" style="margin-top: 15px;">
                 อัปโหลดส่งกรรมการ
             </button>
         </form>
-
         <hr style="border: 0; height: 1px; background: var(--border); margin: 30px 0;">
 
         <div class="evidence-grid">
@@ -216,6 +223,19 @@ while($row = $score_result->fetch_assoc()) {
         
         <a href="?action=logout" class="btn btn-secondary" style="margin-top: 30px;">ออกจากระบบ</a>
     </div>
+
+    <script>
+        function showFileName(input, displayId) {
+            const display = document.getElementById(displayId);
+            if (input.files && input.files.length > 0) {
+                display.innerText = "Selected: " + input.files[0].name;
+                display.classList.add('active');
+            } else {
+                display.innerText = "";
+                display.classList.remove('active');
+            }
+        }
+    </script>
     <script src="background.js"></script>
 </body>
 </html>
