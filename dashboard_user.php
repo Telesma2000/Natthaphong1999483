@@ -1,4 +1,6 @@
 <?php
+date_default_timezone_set('Asia/Bangkok'); 
+
 if (isset($_GET['action']) && $_GET['action'] == 'logout') {
     session_start();
     session_unset();
@@ -13,17 +15,19 @@ checkLogin();
 
 $user_id = $_SESSION['user_id'];
 
-// --- [จุดแก้ไข]: ดึงข้อมูลโดยแยกตามชื่อ Path ในฐานข้อมูลของคุณ ---
-// 1. ไฟล์ที่ User อัปโหลดเอง (ชื่อ Path จะไม่มีคำว่า ADMIN_EVID)
-$user_files_sql = "SELECT * FROM evidence WHERE user_id = $user_id AND file_path NOT LIKE '%ADMIN_EVID_%' ORDER BY uploaded_at DESC";
-$user_files = $conn->query($user_files_sql);
-
-// 2. ไฟล์ที่ Admin/Evaluator แนบมา (ชื่อ Path จะมีคำว่า ADMIN_EVID)
+// 1. ดึงไฟล์ของ Admin (หาคำว่า ADMIN_EVID)
 $admin_files_sql = "SELECT * FROM evidence WHERE user_id = $user_id AND file_path LIKE '%ADMIN_EVID_%' ORDER BY uploaded_at DESC";
 $admin_files = $conn->query($admin_files_sql);
-// -----------------------------------------------------------
 
-// ดึงคะแนนแยกระหว่าง Admin และ Evaluator
+// 2. ดึงไฟล์ของ Evaluator (หาคำว่า EVAL_EVID)
+$eval_files_sql = "SELECT * FROM evidence WHERE user_id = $user_id AND file_path LIKE '%EVAL_EVID_%' ORDER BY uploaded_at DESC";
+$eval_files = $conn->query($eval_files_sql);
+
+// 3. ดึงไฟล์ที่ User อัปโหลดเอง (ไม่เอาทั้ง ADMIN และ EVAL)
+$user_files_sql = "SELECT * FROM evidence WHERE user_id = $user_id AND file_path NOT LIKE '%ADMIN_EVID_%' AND file_path NOT LIKE '%EVAL_EVID_%' ORDER BY uploaded_at DESC";
+$user_files = $conn->query($user_files_sql);
+
+// ดึงคะแนน
 $score_sql = "SELECT e.score, e.comments, u.role as evaluator_role 
               FROM evaluations e 
               JOIN users u ON e.evaluator_id = u.id 
@@ -48,29 +52,61 @@ while($row = $score_result->fetch_assoc()) {
     <title>User Portal | HR System</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .file-list-container {
-            background: #0d1117; 
-            border: 1px solid var(--border); 
-            border-radius: 4px; 
-            padding: 10px;
-            margin-top: 10px;
+        /* Grid แบ่งซ้ายขวา */
+        .evidence-grid {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .evidence-col {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
         }
         .file-item {
-            border-bottom: 1px solid var(--border); 
-            padding: 10px 0; 
-            font-size: 14px;
+            background: #0d1117;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .img-preview {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+            margin-top: 5px;
+            border: 1px solid #30363d;
+            display: block;
+        }
+        .file-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 5px;
+            font-size: 12px;
+            color: var(--text-dim);
         }
-        .file-item:last-child { border-bottom: none; }
-        .file-link { color: var(--primary); text-decoration: none; font-weight: bold; }
-        .file-link:hover { text-decoration: underline; }
-        .file-date { color: var(--text-dim); font-size: 12px; font-family: 'JetBrains Mono', monospace; }
+        .download-btn {
+            display: inline-block;
+            margin-top: 5px;
+            padding: 6px 12px;
+            background: rgba(88, 166, 255, 0.1);
+            color: var(--primary);
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 12px;
+            border: 1px solid var(--primary);
+        }
+        .download-btn:hover { background: var(--primary); color: #000; }
     </style>
 </head>
 <body>
-    <div class="container" style="max-width: 650px;">
+    <div class="container" style="max-width: 900px;">
         <div class="code-font" style="color: var(--accent);">สถานะ การประเมิน</div>
         <h2>ผลประเมิน</h2>
 
@@ -98,47 +134,85 @@ while($row = $score_result->fetch_assoc()) {
 
         <form action="save_upload.php" method="post" enctype="multipart/form-data">
             <div class="input-group">
-                <label for="file">แนบไฟล์หลักฐาน (PDF/IMG/DOCX/XLSX):</label>
-                <input type="file" name="file_upload" id="file" required style="color: white; background: #0d1117; padding: 10px; border: 1px dashed var(--border); border-radius: 4px; width: 100%; box-sizing: border-box;">
+                <label for="file">ส่งงาน (PDF, JPG, PNG | Max 10MB):</label>
+                <input type="file" name="file_upload" id="file" accept=".pdf, .jpg, .jpeg, .png" required style="color: white; background: #0d1117; padding: 10px; border: 1px dashed var(--border); border-radius: 4px; width: 100%; box-sizing: border-box;">
             </div>
             <button type="submit" class="btn btn-primary" style="margin-top: 10px;">
-                อัปโหลดเอกสาร
+                อัปโหลดส่งกรรมการ
             </button>
         </form>
 
         <hr style="border: 0; height: 1px; background: var(--border); margin: 30px 0;">
 
-        <?php if ($admin_files->num_rows > 0): ?>
-            <div style="margin-bottom: 25px;">
-                <label class="code-font" style="color: var(--accent);">📥 FEEDBACK_DOCUMENTS (เอกสารตอบกลับจากกรรมการ):</label>
-                <div class="file-list-container">
-                    <?php while($f = $admin_files->fetch_assoc()): ?>
+        <div class="evidence-grid">
+            
+            <div class="evidence-col">
+                <label class="code-font" style="color: var(--primary); display:block; margin-bottom:15px;">ADMIN FEEDBACK</label>
+                
+                <?php if ($admin_files->num_rows > 0): ?>
+                    <?php while($f = $admin_files->fetch_assoc()): 
+                        $ext = strtolower(pathinfo($f['file_name'], PATHINFO_EXTENSION));
+                        $is_img = in_array($ext, ['jpg', 'jpeg', 'png', 'gif']);
+                    ?>
                         <div class="file-item">
-                            <a href="<?php echo $f['file_path']; ?>" target="_blank" class="file-link" style="color: var(--accent);">
-                                📎 <?php echo $f['file_name']; ?> 
-                            </a>
-                            <span class="file-date"><?php echo date('d/m/Y H:i', strtotime($f['uploaded_at'])); ?></span>
+                            <div class="file-header">
+                                <span><?php echo $f['file_name']; ?></span>
+                                <span><?php echo date('d/m/y H:i', strtotime($f['uploaded_at'])); ?></span>
+                            </div>
+                            <?php if($is_img): ?>
+                                <a href="<?php echo $f['file_path']; ?>" target="_blank"><img src="<?php echo $f['file_path']; ?>" class="img-preview"></a>
+                            <?php else: ?>
+                                <a href="<?php echo $f['file_path']; ?>" target="_blank" class="download-btn">เปิดดูเอกสาร</a>
+                            <?php endif; ?>
                         </div>
                     <?php endwhile; ?>
-                </div>
+                <?php else: ?>
+                    <p style="color: var(--text-dim); font-size: 13px;">- ไม่มีเอกสารจาก Admin -</p>
+                <?php endif; ?>
             </div>
-        <?php endif; ?>
 
-        <?php if ($user_files->num_rows > 0): ?>
-            <div>
-                <label class="code-font" style="color: var(--primary);">📤 MY_UPLOADED_FILES (เอกสารที่คุณส่ง):</label>
-                <div class="file-list-container">
-                    <?php while($f = $user_files->fetch_assoc()): ?>
+            <div class="evidence-col">
+                <label class="code-font" style="color: #bc8cff; display:block; margin-bottom:15px;">EVALUATOR FEEDBACK</label>
+                
+                <?php if ($eval_files->num_rows > 0): ?>
+                    <?php while($f = $eval_files->fetch_assoc()): 
+                        $ext = strtolower(pathinfo($f['file_name'], PATHINFO_EXTENSION));
+                        $is_img = in_array($ext, ['jpg', 'jpeg', 'png', 'gif']);
+                    ?>
                         <div class="file-item">
-                            <a href="<?php echo $f['file_path']; ?>" target="_blank" class="file-link">
-                                📄 <?php echo $f['file_name']; ?> 
-                            </a>
-                            <span class="file-date"><?php echo date('d/m/Y H:i', strtotime($f['uploaded_at'])); ?></span>
+                            <div class="file-header">
+                                <span><?php echo $f['file_name']; ?></span>
+                                <span><?php echo date('d/m/y H:i', strtotime($f['uploaded_at'])); ?></span>
+                            </div>
+                            <?php if($is_img): ?>
+                                <a href="<?php echo $f['file_path']; ?>" target="_blank"><img src="<?php echo $f['file_path']; ?>" class="img-preview"></a>
+                            <?php else: ?>
+                                <a href="<?php echo $f['file_path']; ?>" target="_blank" class="download-btn">เปิดดูเอกสาร</a>
+                            <?php endif; ?>
                         </div>
                     <?php endwhile; ?>
-                </div>
+                <?php else: ?>
+                    <p style="color: var(--text-dim); font-size: 13px;">- ไม่มีเอกสารจาก Evaluator -</p>
+                <?php endif; ?>
             </div>
-        <?php endif; ?>
+
+        </div>
+
+        <div style="margin-top: 30px;">
+            <label class="code-font" style="color: var(--accent); margin-bottom: 10px; display:block;">ประวัติการส่งงานของคุณ:</label>
+            <div style="background: rgba(255,255,255,0.02); padding: 15px; border-radius: 6px;">
+                <?php if ($user_files->num_rows > 0): ?>
+                    <?php while($f = $user_files->fetch_assoc()): ?>
+                        <div style="padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text-dim); display:flex; justify-content:space-between;">
+                            <span>📄 <?php echo $f['file_name']; ?></span>
+                            <span><?php echo date('d/m/Y H:i', strtotime($f['uploaded_at'])); ?></span>
+                        </div>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <p style="color: var(--text-dim); font-size: 13px;">- คุณยังไม่ได้ส่งงาน -</p>
+                <?php endif; ?>
+            </div>
+        </div>
         
         <a href="?action=logout" class="btn btn-secondary" style="margin-top: 30px;">ออกจากระบบ</a>
     </div>
